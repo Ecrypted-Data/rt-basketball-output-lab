@@ -34,7 +34,6 @@ def select_keyframes(results: Sequence[TrackingResult]) -> list[Keyframe]:
     """挑选关键帧，覆盖正常可见、完全出画、重新进入画面三个阶段。
 
     - normal-visible：第一段可见段的中点（正常可见）
-    - disappear：出画前最后一帧（方便核对丢失位置）
     - out-of-frame：最长丢失段的中点（完全出画）
     - re-entering：丢失段之后重新可见的第一帧（重新进入画面）
     """
@@ -50,9 +49,6 @@ def select_keyframes(results: Sequence[TrackingResult]) -> list[Keyframe]:
         _, start, end = first_visible
         mid = (start + end) // 2
         picked.append(Keyframe("normal-visible", "KEYFRAME: NORMAL VISIBLE", results[mid]))
-        # 若紧跟着出画，再保留出画前最后一帧作为丢失位置参考
-        if end + 1 < len(results) and results[end + 1].status == "lost":
-            picked.append(Keyframe("disappear", "KEYFRAME: DISAPPEAR POINT", results[end]))
 
     # 2) 完全出画：取最长丢失段（并列取最早），段内中点最具代表性
     lost_runs = [run for run in runs if run[0] == "lost"]
