@@ -27,7 +27,13 @@ def main() -> None:
         help="Path to the input video (default: bundled samples/basketball.mp4).",
     )
     parser.add_argument("--output-dir", type=Path, default=Path("runs/tracking"))
+    parser.add_argument(
+        "--keyframes", type=int, nargs="+", default=[], metavar="FRAME",
+        help="Also export annotated PNGs for these zero-based frame indices.",
+    )
     args = parser.parse_args()
+    if any(index < 0 for index in args.keyframes):
+        parser.error("--keyframes must contain non-negative frame indices")
 
     input_path = args.input
     try:
@@ -36,7 +42,7 @@ def main() -> None:
             fps = reader.get(cv2.CAP_PROP_FPS)
             if not math.isfinite(fps) or fps <= 0:
                 parser.error(f"Invalid frame rate in {input_path}")
-            count = write_outputs(track_video(reader, fps), fps, args.output_dir)
+            count = write_outputs(track_video(reader, fps), fps, args.output_dir, args.keyframes)
             if count == 0:
                 parser.error(f"No frames could be decoded from {input_path}")
         finally:

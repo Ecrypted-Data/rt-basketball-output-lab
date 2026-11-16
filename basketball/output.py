@@ -23,9 +23,13 @@ def annotate(frame: np.ndarray, result: TrackingResult) -> np.ndarray:
 
 
 def write_outputs(
-    items: Iterable[tuple[np.ndarray, TrackingResult]], fps: float, directory: Path
+    items: Iterable[tuple[np.ndarray, TrackingResult]], fps: float, directory: Path,
+    keyframes: Iterable[int] = (),
 ) -> int:
     directory.mkdir(parents=True, exist_ok=True)
+    pending = set(keyframes)
+    if pending:
+        (directory / "keyframes").mkdir(exist_ok=True)
     writer = None
     count = 0
     try:
@@ -38,6 +42,12 @@ def write_outputs(
                     writer = open_writer(directory / "annotated.mp4", fps, marked)
                 writer.write(marked)
 
+                if result.frame_index in pending:
+                    path = directory / "keyframes" / f"frame_{result.frame_index:06d}_{result.status}.png"
+                    if not cv2.imwrite(str(path), marked):
+                        raise OSError(f"Cannot write keyframe: {path}")
+                    pending.remove(result.frame_index)
+
                 ball = result.ball
                 coordinates = ("", "", "") if ball is None else (ball.x, ball.y, ball.radius)
                 log.writerow((result.frame_index, f"{result.time_seconds:.3f}", result.status, *coordinates))
@@ -45,4 +55,6 @@ def write_outputs(
     finally:
         if writer is not None:
             writer.release()
+    if pending:
+        raise OSError(f"Requested keyframes not found: {sorted(pending)}")
     return count
