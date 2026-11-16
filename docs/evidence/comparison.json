@@ -1,0 +1,11 @@
+{
+  "baseline_commit": "0d3c5830d7a43fc247a824657068524f6153d103",
+  "input_sha256": "f244ae13c9472ebb047d0c09caaaf41b947cad22decb66333c97fb82aff171a2",
+  "csv_identical": true,
+  "csv_before_sha256": "bf78e089895cc74b98bcab01ed666b7a99f6dc14c8bbf0d328f05fc67db9ab69",
+  "csv_after_sha256": "bf78e089895cc74b98bcab01ed666b7a99f6dc14c8bbf0d328f05fc67db9ab69",
+  "video_decoded_frames": 302,
+  "video_pixels_identical": true,
+  "video_before_sha256": "3fd409161e3155b868998cb2bc8e03adbd050bd0c2190e3af1cc762305c6dc6f",
+  "video_after_sha256": "3fd409161e3155b868998cb2bc8e03adbd050bd0c2190e3af1cc762305c6dc6f"
+}
