@@ -17,6 +17,7 @@ python -m basketball --output-dir runs/baseline
 
 - `tracking.csv` 每帧一行，含帧号、时间、追踪状态和位置。帧号从 0 开始；未检测到时状态为 `lost`，坐标留空。
 - `annotated.mp4` 画出已检测到的篮球并标明当前帧号及状态。
+- `keyframes/` 保存三阶段带标记截图：`visible_frame_XXXX.jpg`（首次正常可见）、`lost_frame_XXXX.jpg`（丢失后等待 0.5 秒，确认篮球完全出画）、`reentry_frame_XXXX.jpg`（重新进入画面）。截图直接复用 `detect_ball` 每帧产出的 `TrackingResult`，不重新检测。
 
 ## 模块
 
@@ -25,7 +26,7 @@ python -m basketball --output-dir runs/baseline
 | `video.py` | 读取视频帧及初始化视频写入器 |
 | `detection.py` | 从单帧定位篮球并返回坐标和半径 |
 | `tracking.py` | 将单帧检测整理为带帧号、时间和状态的结果 |
-| `output.py` | 用结果绘制标注并写出 CSV 和视频 |
+| `output.py` | 用结果绘制标注并写出 CSV、视频和关键帧截图 |
 | `__main__.py` | 解析参数和串联处理流程 |
 
 ## 提交

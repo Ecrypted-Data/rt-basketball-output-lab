@@ -44,7 +44,10 @@ def main() -> None:
     except OSError as error:
         parser.exit(1, f"{error}\n")
 
-    print(f"{count} frames -> {args.output_dir / 'tracking.csv'} and {args.output_dir / 'annotated.mp4'}")
+    print(
+        f"{count} frames -> {args.output_dir / 'tracking.csv'}, "
+        f"{args.output_dir / 'annotated.mp4'} and {args.output_dir / 'keyframes'}"
+    )
 
 
 if __name__ == "__main__":
