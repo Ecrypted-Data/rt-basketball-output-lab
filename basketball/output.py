@@ -1,12 +1,13 @@
 import csv
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 
 import cv2
 import numpy as np
 
+from .keyframes import Keyframe
 from .tracking import TrackingResult
-from .video import open_writer
+from .video import frames, open_video, open_writer
 
 
 def annotate(frame: np.ndarray, result: TrackingResult) -> np.ndarray:
@@ -24,10 +25,11 @@ def annotate(frame: np.ndarray, result: TrackingResult) -> np.ndarray:
 
 def write_outputs(
     items: Iterable[tuple[np.ndarray, TrackingResult]], fps: float, directory: Path
-) -> int:
+) -> list[TrackingResult]:
+    """Write the annotated video and CSV, returning the per-frame results."""
     directory.mkdir(parents=True, exist_ok=True)
     writer = None
-    count = 0
+    records: list[TrackingResult] = []
     try:
         with (directory / "tracking.csv").open("w", encoding="utf-8", newline="") as output:
             log = csv.writer(output)
@@ -41,8 +43,42 @@ def write_outputs(
                 ball = result.ball
                 coordinates = ("", "", "") if ball is None else (ball.x, ball.y, ball.radius)
                 log.writerow((result.frame_index, f"{result.time_seconds:.3f}", result.status, *coordinates))
-                count += 1
+                records.append(result)
     finally:
         if writer is not None:
             writer.release()
-    return count
+    return records
+
+
+def write_screenshots(
+    input_path: Path,
+    records: Sequence[TrackingResult],
+    keyframes: Sequence[Keyframe],
+    directory: Path,
+) -> list[Path]:
+    """Save annotated stills for the selected keyframes, reusing the recorded results."""
+    if not keyframes:
+        return []
+
+    directory.mkdir(parents=True, exist_ok=True)
+    wanted = {keyframe.frame_index: keyframe for keyframe in keyframes}
+    last_index = max(wanted)
+    written: list[Path] = []
+
+    reader = open_video(input_path)
+    try:
+        for index, frame in enumerate(frames(reader)):
+            keyframe = wanted.get(index)
+            if keyframe is not None:
+                path = directory / f"{keyframe.stage}.jpg"
+                marked = annotate(frame, records[index])
+                if not cv2.imwrite(str(path), marked, [cv2.IMWRITE_JPEG_QUALITY, 95]):
+                    raise OSError(f"Cannot write screenshot: {path}")
+                written.append(path)
+            if index == last_index:
+                break
+        else:
+            raise OSError(f"Input video ended before frame {last_index}: {input_path}")
+    finally:
+        reader.release()
+    return written

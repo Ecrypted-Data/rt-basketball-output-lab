@@ -7,7 +7,8 @@ import cv2
 import numpy as np
 
 from .detection import detect_ball
-from .output import write_outputs
+from .keyframes import select_keyframes
+from .output import write_outputs, write_screenshots
 from .tracking import Tracker, TrackingResult
 from .video import frames, open_video
 
@@ -36,15 +37,25 @@ def main() -> None:
             fps = reader.get(cv2.CAP_PROP_FPS)
             if not math.isfinite(fps) or fps <= 0:
                 parser.error(f"Invalid frame rate in {input_path}")
-            count = write_outputs(track_video(reader, fps), fps, args.output_dir)
-            if count == 0:
+            records = write_outputs(track_video(reader, fps), fps, args.output_dir)
+            if not records:
                 parser.error(f"No frames could be decoded from {input_path}")
         finally:
             reader.release()
     except OSError as error:
         parser.exit(1, f"{error}\n")
 
-    print(f"{count} frames -> {args.output_dir / 'tracking.csv'} and {args.output_dir / 'annotated.mp4'}")
+    keyframes = select_keyframes(records)
+    try:
+        screenshots = write_screenshots(
+            input_path, records, keyframes, args.output_dir / "keyframes"
+        )
+    except OSError as error:
+        parser.exit(1, f"{error}\n")
+
+    print(f"{len(records)} frames -> {args.output_dir / 'tracking.csv'} and {args.output_dir / 'annotated.mp4'}")
+    for keyframe, path in zip(keyframes, screenshots):
+        print(f"{keyframe.stage} frame {keyframe.frame_index} -> {path}")
 
 
 if __name__ == "__main__":
