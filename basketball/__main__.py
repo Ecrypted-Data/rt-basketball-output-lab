@@ -36,7 +36,7 @@ def main() -> None:
             fps = reader.get(cv2.CAP_PROP_FPS)
             if not math.isfinite(fps) or fps <= 0:
                 parser.error(f"Invalid frame rate in {input_path}")
-            count = write_outputs(track_video(reader, fps), fps, args.output_dir)
+            count = write_outputs(track_video(reader, fps), fps, args.output_dir, input_path)
             if count == 0:
                 parser.error(f"No frames could be decoded from {input_path}")
         finally:
@@ -45,6 +45,7 @@ def main() -> None:
         parser.exit(1, f"{error}\n")
 
     print(f"{count} frames -> {args.output_dir / 'tracking.csv'} and {args.output_dir / 'annotated.mp4'}")
+    print(f"keyframes -> {args.output_dir / 'keyframes'}")
 
 
 if __name__ == "__main__":
