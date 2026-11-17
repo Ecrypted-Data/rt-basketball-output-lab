@@ -23,7 +23,11 @@ def annotate(frame: np.ndarray, result: TrackingResult) -> np.ndarray:
 
 
 def write_outputs(
-    items: Iterable[tuple[np.ndarray, TrackingResult]], fps: float, directory: Path
+    items: Iterable[tuple[np.ndarray, TrackingResult]],
+    fps: float,
+    directory: Path,
+    *,
+    snapshot_frames: set[int] | None = None,
 ) -> int:
     directory.mkdir(parents=True, exist_ok=True)
     writer = None
@@ -34,6 +38,10 @@ def write_outputs(
             log.writerow(("frame", "time_s", "status", "center_x", "center_y", "radius"))
             for frame, result in items:
                 marked = annotate(frame, result)
+                if snapshot_frames is not None and result.frame_index in snapshot_frames:
+                    cv2.imwrite(
+                        str(directory / f"snapshot_frame_{result.frame_index:05d}.png"), marked
+                    )
                 if writer is None:
                     writer = open_writer(directory / "annotated.mp4", fps, marked)
                 writer.write(marked)

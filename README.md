@@ -18,6 +18,16 @@ python -m basketball --output-dir runs/baseline
 - `tracking.csv` 每帧一行，含帧号、时间、追踪状态和位置。帧号从 0 开始；未检测到时状态为 `lost`，坐标留空。
 - `annotated.mp4` 画出已检测到的篮球并标明当前帧号及状态。
 
+### 关键帧截图
+
+带 `--snapshots` 运行即可额外保存指定帧的截图：
+
+```bash
+python -m basketball --output-dir runs/after --snapshots 30,180,215
+```
+
+每个帧号对应一张 `snapshot_frame_<帧号>.png`（帧号补零到 5 位，例如 `snapshot_frame_00180.png`），与 `tracking.csv`、`annotated.mp4` 输出到同一目录。截图复用同一份检测结果，原有 CSV 与标注视频不受影响；未检测到球的帧也会照常保存。
+
 ## 模块
 
 | 模块 | 职责 |

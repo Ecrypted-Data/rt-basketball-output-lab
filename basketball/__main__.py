@@ -27,7 +27,21 @@ def main() -> None:
         help="Path to the input video (default: bundled samples/basketball.mp4).",
     )
     parser.add_argument("--output-dir", type=Path, default=Path("runs/tracking"))
+    parser.add_argument(
+        "--snapshots",
+        default="",
+        help="Comma-separated frame indices to save as PNG snapshots (e.g. 30,180,215).",
+    )
     args = parser.parse_args()
+
+    snapshot_frames: set[int] = set()
+    if args.snapshots.strip():
+        try:
+            snapshot_frames = {
+                int(part.strip()) for part in args.snapshots.split(",") if part.strip()
+            }
+        except ValueError:
+            parser.error(f"Invalid frame index in --snapshots: {args.snapshots}")
 
     input_path = args.input
     try:
@@ -36,7 +50,12 @@ def main() -> None:
             fps = reader.get(cv2.CAP_PROP_FPS)
             if not math.isfinite(fps) or fps <= 0:
                 parser.error(f"Invalid frame rate in {input_path}")
-            count = write_outputs(track_video(reader, fps), fps, args.output_dir)
+            count = write_outputs(
+                track_video(reader, fps),
+                fps,
+                args.output_dir,
+                snapshot_frames=snapshot_frames,
+            )
             if count == 0:
                 parser.error(f"No frames could be decoded from {input_path}")
         finally:
