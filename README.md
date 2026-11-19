@@ -17,6 +17,7 @@ python -m basketball --output-dir runs/baseline
 
 - `tracking.csv` 每帧一行，含帧号、时间、追踪状态和位置。帧号从 0 开始；未检测到时状态为 `lost`，坐标留空。
 - `annotated.mp4` 画出已检测到的篮球并标明当前帧号及状态。
+- `screenshots/` 三个阶段各一张标注截图：首个可见帧 `visible_frameXXXX.png`、最长失检段的中间帧 `absent_frameXXXX.png`、重新进入画面的首帧 `reentry_frameXXXX.png`。
 
 ## 模块
 
